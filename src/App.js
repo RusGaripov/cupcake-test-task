@@ -1,9 +1,9 @@
 import React from "react";
 import MainComponent from "./components/MainComponent"
 
-function App() {
+const App = () => {
   return (
-     <MainComponent/>
+    <MainComponent />
   );
 }
 

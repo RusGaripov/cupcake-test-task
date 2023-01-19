@@ -9,6 +9,33 @@ const MainComponent = () => {
     const [newArray, setNewArray] = useState([]);
     const [minRateArr, setMinRateArr] = useState([]);
 
+
+    const calcDataRow = (cur1, cur2) => {
+
+        const objFirst = dataFirst["rates"];
+        const objSecond = dataSecond["rates"];
+        const objThird = dataThird["rates"];
+
+        const object = {
+            name: `${cur1}/${cur2}`,
+            first: (objFirst[cur1] / objFirst[cur2]).toFixed(2),
+            second: (objSecond[cur1] / objSecond[cur2]).toFixed(2),
+            third: (objThird[cur1] / objThird[cur2]).toFixed(2),
+        }
+
+        const min = Math.min(
+            Number(object.first),
+            Number(object.second),
+            Number(object.third),
+        );
+        return {
+            object,
+            min
+        }
+    }
+
+
+
     useEffect(() => {
         getFirst();
         getSecond();
@@ -21,68 +48,38 @@ const MainComponent = () => {
             const tempArr = [];
             const minRateTemp = [];
 
-         // создаем массив объектов, где объект - содержимое для строки
-         // также выбираем минимальные значения для каждой строки
+            // создаем массив объектов, где объект - содержимое для строки в таблице
+            // также выбираем минимальные значения для каждой строки
             for (const name of ratesNames) {
-                const object = new Object();
-                object.name = name;
                 if (name === "RUB/USD") {
-                    object.first = (objFirst["RUB"] / objFirst["USD"]).toFixed(2);
-                    object.second = (objSecond["RUB"] / objSecond["USD"]).toFixed(2);
-                    object.third = (objThird["RUB"] / objThird["USD"]).toFixed(2);
-
-                    const min = Math.min(
-                        Number(object.first),
-                        Number(object.second),
-                        Number(object.third)
-                    );
-                    minRateTemp.push(min);
+                    const dataRow = calcDataRow('RUB', 'USD');
+                    tempArr.push(dataRow.object);
+                    minRateTemp.push(dataRow.min);
                 } else if (name === "RUB/EUR") {
-                    object.first = (objFirst["RUB"] / objFirst["EUR"]).toFixed(2);
-                    object.second = (objSecond["RUB"] / objSecond["EUR"]).toFixed(2);
-                    object.third = (objThird["RUB"] / objThird["EUR"]).toFixed(2);
-
-                    const min = Math.min(
-                        Number(object.first),
-                        Number(object.second),
-                        Number(object.third)
-                    );
-                    minRateTemp.push(min);
+                    const dataRow = calcDataRow('RUB', 'EUR');
+                    tempArr.push(dataRow.object);
+                    minRateTemp.push(dataRow.min);
                 } else if (name === "EUR/USD") {
-                    object.first = (objFirst["EUR"] / objFirst["USD"]).toFixed(2);
-                    object.second = (objSecond["EUR"] / objSecond["USD"]).toFixed(2);
-                    object.third = (objThird["EUR"] / objThird["USD"]).toFixed(2);
-
-                    const min = Math.min(
-                        Number(object.first),
-                        Number(object.second),
-                        Number(object.third)
-                    );
-                    minRateTemp.push(min);
+                    const dataRow = calcDataRow('EUR', 'USD');
+                    tempArr.push(dataRow.object);
+                    minRateTemp.push(dataRow.min);
                 } else {
-                    object.first = objFirst[`${name.slice(0, 3)}`].toFixed(2);
-                    object.second = objSecond[`${name.slice(0, 3)}`].toFixed(2);
-                    object.third = objThird[`${name.slice(0, 3)}`].toFixed(2);
-
-                    const min = Math.min(
-                        Number(object.first),
-                        Number(object.second),
-                        Number(object.third)
-                    );
+                    const object = {
+                        name,
+                        first: objFirst[`${name.slice(0, 3)}`].toFixed(2),
+                        second: objSecond[`${name.slice(0, 3)}`].toFixed(2),
+                        third: objThird[`${name.slice(0, 3)}`].toFixed(2),
+                    };
+                    const min = Math.min(Number(object.first), Number(object.second), Number(object.third));
+                    tempArr.push(object);
                     minRateTemp.push(min);
                 }
-
-                tempArr.push(object);
             }
             setNewArray(tempArr);
-
             setMinRateArr(minRateTemp);
-
         }
     }, [dataFirst, dataSecond, dataThird]);
 
-
-    // делаем запросы к серверу
 
     const baseUrl = "http://localhost:3000/api/v1";
 
@@ -148,10 +145,11 @@ const MainComponent = () => {
                     <tbody>
                         {newArray.map((item, i) => {
                             return (
-                                <tr>
+                                <tr key={i}>
                                     {Object.values(newArray[i]).map((item2, index2) => {
                                         return (
                                             <td
+                                                key={index2}
                                                 className={index2 > 0 && Number(item2) === Number(minRateArr[i])
                                                     ?
                                                     styles.cellMin
